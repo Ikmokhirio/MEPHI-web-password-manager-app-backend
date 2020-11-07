@@ -1,2 +1,2 @@
 # web-backend
-Simple quiz project (node+express+postgres+docker+react)
+Simple web project (node+express+postgres+docker+react)
