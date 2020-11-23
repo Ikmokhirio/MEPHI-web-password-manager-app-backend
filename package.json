@@ -1,0 +1,30 @@
+{
+  "name": "web-backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "sequelize-cli db:migrate && nodemon -L"
+  },
+  "repository": "git@github.com:Ikmokhirio/web-backend.git",
+  "author": "ikmokhirio <ikmokhirio@mail.ru>",
+  "license": "MIT",
+  "dependencies": {
+    "argon2": "^0.27.0",
+    "body-parser": "^1.19.0",
+    "connect-flash": "^0.1.1",
+    "cookie-parser": "^1.4.5",
+    "cookie-session": "^1.4.0",
+    "crypto": "^1.0.1",
+    "express": "^4.17.1",
+    "nodemon": "^2.0.6",
+    "passport": "^0.4.1",
+    "passport-cookie": "^1.0.8",
+    "passport-local": "^1.0.0",
+    "pg": "^8.5.1",
+    "pg-hstore": "^2.3.3",
+    "sequelize": "^6.3.5"
+  },
+  "devDependencies": {
+    "sequelize-cli": "^6.2.0"
+  }
+}
