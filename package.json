@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "sequelize-cli db:migrate && nodemon -L"
+    "start": "sequelize-cli db:migrate && nodemon -L",
+    "undo": "sequelize-cli db:migrate:undo:all"
   },
   "repository": "git@github.com:Ikmokhirio/web-backend.git",
   "author": "ikmokhirio <ikmokhirio@mail.ru>",
