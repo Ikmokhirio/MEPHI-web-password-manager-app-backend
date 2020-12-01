@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const passport = require('./passport').passport
+const passport = require('./pass').passport
 
 const logger = require('./logger');
 const {findUserById} = require("./database");
@@ -66,10 +66,7 @@ router.get('/users', passport.authenticate('cookie', {
 //     }
 // });
 
-router.post('/users', passport.authenticate('api', {
-    failureRedirect: '/login',
-    failureFlash: true
-}), passport.authenticate('register'), (req, res) => {
+router.post('/users',passport.authenticate('register'), (req, res) => {
     res.send("OK")
 })
 // }), function (req, res) {
