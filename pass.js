@@ -16,10 +16,9 @@ const loginStrategy = new LocalStrategy({
     passReqToCallback: true
 }, async (req, username, password, done) => {
 
-    let user = findUser(username)
+    let user = await findUser(username)
     if (user === undefined || user === null) return done(null, false, {message: "No such user"})
-
-    let hash = getUserPassword(username)
+    let hash = await getUserPassword(username)
 
     let result = await argon.verify(hash, password)
 
@@ -27,7 +26,7 @@ const loginStrategy = new LocalStrategy({
         return done(null, user)
     }
 
-    return done(null, false)
+    return done(null, false, {message: "An unknown error occurred"})
 
 })
 
@@ -44,10 +43,10 @@ const registerStrategy = new LocalStrategy({
             return done(null, newUser)
         }
 
-        return done(null, false)
+        return done(null, false, {message: "Cannot create user"})
     }
 
-    return done(null, false)
+    return done(null, false, {message: "This user already exist"})
 })
 
 const cookieStrategy = new CookieStrategy({

@@ -15,21 +15,48 @@ const {
 
 router.use(logger.logRequestToConsole);
 
-router.post('/login', passport.authenticate('login', {
-    successRedirect: '/',
-    failureRedirect: '/login',
-    failureFlash: true
-}));
+router.get('/api/users/login', (req, res) => {
+    let flashMessage = req.flash()
+    if (flashMessage) {
+        res.send({
+            message: flashMessage
+        })
+    } else {
+        res.send({
+            message: "Unexpected error"
+        })
+    }
+})
 
-router.get('/logout', function (req, res) {
+router.post('/api/users/login', passport.authenticate('login',
+    {
+        failureRedirect: '/api/users/login',
+        failureFlash: true
+    }), (req, res) => {
+    res.send({message: "SUCCESS"})
+});
+
+router.get('/api/user/logout', function (req, res) {
     req.logout();
-    res.redirect('/');
+    res.send({message: "SUCCESS LOGOUT"})
 });
 
 //==============CRUD===========================
 
-router.get('/users', passport.authenticate('cookie', {
-    failureRedirect: '/login',
+router.get('/api/user', passport.authenticate('cookie', {
+    failureRedirect: '/api/users/login',
+    failureFlash: true
+}), async (req, res) => {
+    console.log("HERE")
+    res.send({
+        username: req.user.username,
+        role: req.user.role,
+        email: req.user.email
+    })
+})
+
+router.get('/api/users', passport.authenticate('cookie', {
+    failureRedirect: '/api/users/login',
     failureFlash: true
 }), async (req, res) => {
     if (req.user) {
@@ -38,8 +65,8 @@ router.get('/users', passport.authenticate('cookie', {
     } else {
         res.send("NO OK")
     }
-
 })
+
 // }), function (req, res) {
 //     if (req.query.id) {
 //         findUserById(req.query.id).then(user => {
@@ -66,8 +93,11 @@ router.get('/users', passport.authenticate('cookie', {
 //     }
 // });
 
-router.post('/users',passport.authenticate('register'), (req, res) => {
-    res.send("OK")
+router.post('/api/users', passport.authenticate('register', {}), function (req, res) {
+    res.send({
+        message: "OK",
+        error_name: "NO"
+    })
 })
 // }), function (req, res) {
 //     let username = req.body.username;
@@ -93,14 +123,14 @@ router.post('/users',passport.authenticate('register'), (req, res) => {
 //
 // });
 
-router.put('/users', passport.authenticate('cookie', {
-    failureRedirect: '/login',
-    failureFlash: true
-}), updateUserData, function (req, res) {
-
-    res.send("OK")
-
-});
+// router.put('/api/users', passport.authenticate('cookie', {
+//     failureRedirect: '/api/users/login',
+//     failureFlash: true
+// }), updateUserData, function (req, res) {
+//
+//     res.send("OK")
+//
+// });
 
 // router.delete('/users', passport.authenticate('api', {
 //     failureRedirect: '/login',
