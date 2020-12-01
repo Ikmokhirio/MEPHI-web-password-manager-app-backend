@@ -1,4 +1,4 @@
-const passport = require('passport')
+const pass = require('passport')
 const LocalStrategy = require('passport-local').Strategy
 const CookieStrategy = require('passport-cookie').Strategy
 const User = require('./database').User
@@ -21,7 +21,7 @@ const loginStrategy = new LocalStrategy({
 
     let hash = getUserPassword(username)
 
-    let result = argon.verify(await hash, password)
+    let result = await argon.verify(hash, password)
 
     if (result) {
         return done(null, user)
@@ -36,9 +36,9 @@ const registerStrategy = new LocalStrategy({
     passwordField: 'password',
     passReqToCallback: true
 }, async (req, username, password, done) => {
-    let isUserExist = isUserExist(username)
 
-    if (!isUserExist) {
+    let exist = await isUserExist(username)
+    if (!exist) {
         let newUser = await createNewUser(username, password, req.body.email, req.body.master_password)
         if (newUser) {
             return done(null, newUser)
@@ -56,7 +56,7 @@ const cookieStrategy = new CookieStrategy({
 }, async (req, session, done) => {
     if (!req.user) return done(null, false, {message: "You should authorize to access this page"});
 
-    let user = findUser(req.user.username)
+    let user = await findUser(req.user.username)
 
     if (user !== undefined && user !== null) {
         return done(null, user)
@@ -66,18 +66,18 @@ const cookieStrategy = new CookieStrategy({
 
 })
 
-passport.serializeUser((user, done) => {
+pass.serializeUser((user, done) => {
     done(null, user.id)
 })
 
-passport.deserializeUser((id, done) => {
+pass.deserializeUser((id, done) => {
     findUserById(id).then(user => {
         done(null, user)
     })
 })
 
-passport.use('login', loginStrategy)
-passport.use('register', registerStrategy)
-passport.use('cookie', cookieStrategy)
+pass.use('login', loginStrategy)
+pass.use('register', registerStrategy)
+pass.use('cookie', cookieStrategy)
 
-exports.passport = passport;
+exports.passport = pass;
