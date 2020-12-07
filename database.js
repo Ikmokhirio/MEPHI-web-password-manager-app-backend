@@ -1,6 +1,9 @@
 const {Sequelize} = require('sequelize')
 const settings = require('./config/config.json').development
 const argon = require('argon2')
+const crypto = require('crypto')
+const algorithm = 'aes-256-cbc'
+const salt = require('./config/settings').password.salt
 
 const sequelize = new Sequelize(settings.database, settings.username, settings.password, {
     host: settings.host,
@@ -9,6 +12,7 @@ const sequelize = new Sequelize(settings.database, settings.username, settings.p
 })
 
 const userModel = require('./models/user')(sequelize, Sequelize)
+const passwordModel = require('./models/passwords')(sequelize, Sequelize)
 
 async function connectToDatabase() {
     try {
@@ -34,6 +38,15 @@ async function findUserById(id) {
         }
     })
 }
+
+async function findPasswordById(id) {
+    return await passwordModel.findOne({
+        where: {
+            id: id
+        }
+    })
+}
+
 
 async function deleteUserById(id) {
     return await userModel.destroy({
@@ -109,6 +122,142 @@ async function updateUserData(req, res, next) {
 
 }
 
+
+async function encryptPassword(algorithm, masterPassword, password) {
+    return new Promise((resolve, reject) => {
+        crypto.scrypt(masterPassword, salt, 32, (err, key) => {
+            if (err) reject(err)
+
+            let iv = Buffer.alloc(16, 0)
+            if (err) reject(err)
+
+            const cipher = crypto.createCipheriv(algorithm, key, iv)
+
+            let hashedPassword = ''
+
+            cipher.setEncoding('hex')
+
+            cipher.on('data', (chunk) => hashedPassword += chunk)
+            cipher.on('end', () => {
+                resolve(hashedPassword)
+            })
+
+            cipher.write(password)
+            cipher.end()
+
+
+        })
+    })
+}
+
+async function decryptPasswords(algorithm, masterPassword, password) {
+    return new Promise((resolve, reject) => {
+        crypto.scrypt(masterPassword, salt, 32, (err, key) => {
+            if (err) reject(err)
+
+            let iv = Buffer.alloc(16, 0)
+            if (err) reject(err)
+
+            const decipher = crypto.createDecipheriv(algorithm, key, iv)
+
+            let decrypted = ''
+            decipher.on('readable', () => {
+                let chunk
+                while ((chunk = decipher.read()) !== null) {
+                    decrypted += chunk.toString()
+                }
+            })
+
+            decipher.setEncoding('utf-8')
+
+            decipher.on('end', () => {
+                resolve(decrypted)
+            })
+
+            decipher.write(password, 'hex')
+            decipher.end()
+        })
+    })
+}
+
+async function getDecryptedPasswords(user) {
+    let encrypted = await getUserPasswords(user)
+
+    for (const item of encrypted) {
+        item.password = await decryptPasswords(algorithm, user.master_password, item.password)
+    }
+
+    return encrypted
+}
+
+async function createNewPassword(req, res, next) {
+    let body = req.body;
+
+    console.log(body)
+    if (!body) throw Error("No data was passed")
+
+    if (!body.title || !body.login || !body.password) throw Error("No data was passed")
+
+    const encryptedPassword = await encryptPassword(algorithm, req.user.master_password, (body.password))
+
+    let newPassword = passwordModel.build({
+        title: body.title,
+        login: body.title,
+        password: encryptedPassword,
+        ownerId: req.user.id
+    });
+
+    await newPassword.save()
+    next()
+}
+
+async function getUserPasswords(user) {
+    return await passwordModel.findAll({
+        where: {
+            ownerId: user.id
+        },
+        raw: true
+    })
+}
+
+async function updatePasswords(req, res, next) {
+
+    let body = req.body
+    if (!body) throw Error("Incorrect data")
+
+    let password = await findPasswordById(body.id)
+    console.log(password)
+
+    if (body.title) {
+        password.title = body.title
+    }
+
+    if (body.login) {
+        password.login = body.login
+    }
+
+    if (body.password) {
+        password.password = await encryptPassword(algorithm, req.user.master_password, body.password)
+    }
+
+    await password.save()
+
+    next()
+
+}
+
+async function deletePassword(req, res, next) {
+    let body = req.body
+    if(!body) throw Error("No data")
+    await passwordModel.destroy({
+        where: {
+            id: body.id
+        }
+    })
+
+    next()
+}
+
 exports.connectToDatabase = connectToDatabase;
 exports.sequelize = sequelize;
 exports.findUser = findUser;
@@ -120,3 +269,8 @@ exports.findUserById = findUserById;
 exports.updateUserData = updateUserData;
 exports.findAllUsers = findAllUsers;
 exports.deleteUserById = deleteUserById;
+exports.createNewPassword = createNewPassword
+exports.getUserPasswords = getUserPasswords
+exports.getDecryptedPasswords = getDecryptedPasswords
+exports.updatePasswords = updatePasswords
+exports.deletePassword = deletePassword

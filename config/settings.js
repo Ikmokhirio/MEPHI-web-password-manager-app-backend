@@ -6,5 +6,8 @@ module.exports = {
     session: {
         cookieSecret: "SecretForCookie",
         cookieName: "session"
+    },
+    password: {
+        salt : "VerySecretSalt"
     }
 }

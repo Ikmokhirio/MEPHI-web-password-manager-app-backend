@@ -4,6 +4,11 @@ const passport = require('./pass').passport
 const logger = require('./logger');
 const {findUserById} = require("./database");
 const {updateUserData} = require("./database");
+const {createNewPassword} = require("./database")
+const {getDecryptedPasswords} = require("./database")
+const {updatePasswords} = require("./database")
+const {deletePassword} = require("./database")
+
 const {
     HttpError,
     FORBIDDEN,
@@ -41,7 +46,7 @@ router.get('/api/user/logout', function (req, res) {
     res.send({message: "SUCCESS LOGOUT"})
 });
 
-//==============CRUD===========================
+//==============CRUD USERS===========================
 
 router.get('/api/user', passport.authenticate('cookie', {
     failureRedirect: '/api/users/login',
@@ -67,61 +72,12 @@ router.get('/api/users', passport.authenticate('cookie', {
     }
 })
 
-// }), function (req, res) {
-//     if (req.query.id) {
-//         findUserById(req.query.id).then(user => {
-//             if (user) {
-//                 res.send(user);
-//             } else {
-//                 throw new HttpError(INTERNAL_SERVER_ERROR, "During this operation an error occurred");
-//             }
-//         }).catch(e => {
-//             console.log(e);
-//             res.send(e);
-//         });
-//     } else {
-//         findAllUsers().then(users => {
-//             if (users) {
-//                 res.send(users);
-//             } else {
-//                 throw new HttpError(INTERNAL_SERVER_ERROR, "During this operation an error occurred");
-//             }
-//         }).catch(e => {
-//             console.log(e);
-//             res.send(e);
-//         });
-//     }
-// });
-
 router.post('/api/users', passport.authenticate('register', {}), function (req, res) {
     res.send({
         message: "OK",
         error_name: "NO"
     })
 })
-// }), function (req, res) {
-//     let username = req.body.username;
-//     let password = req.body.password;
-//     let phone_number = req.body.phone_number;
-//     let gender = req.body.gender;
-//     let description = req.body.description;
-//
-//     if (!description) description = "";
-//
-//     if (!username || !password || !phone_number || !gender) throw new HttpError(BAD_REQUEST, "Incorrect parameters");
-//
-//     createNewUser(username, password, phone_number, gender, description).then(user => {
-//         if (user) {
-//             res.send("Success");
-//         } else {
-//             throw new HttpError(INTERNAL_SERVER_ERROR, "During user creation an error occurred");
-//         }
-//     }).catch(e => {
-//         console.log(e);
-//         res.send(e);
-//     });
-//
-// });
 
 router.put('/api/users',passport.authenticate('login', {
     failureRedirect: '/api/users/login',
@@ -148,7 +104,42 @@ router.put('/api/users',passport.authenticate('login', {
 //     });
 // });
 
-//==============CRUD===========================
+//==============CRUD USERS===========================
+
+//==============CRUD PASSWORDS===========================
+
+// Read
+router.get('/api/passwords', passport.authenticate('cookie', {}), async (req,res) => {
+    let passwords = await getDecryptedPasswords(req.user)
+
+    res.send(passwords)
+})
+
+// Create
+router.post('/api/passwords', passport.authenticate('cookie', {}),createNewPassword, function (req, res) {
+    res.send({
+        message: "OK",
+        error_name: "NO"
+    })
+})
+
+// Update
+router.put('/api/passwords', passport.authenticate('cookie', {}),updatePasswords, function (req, res) {
+    res.send({
+        message: "OK",
+        error_name: "NO"
+    })
+})
+
+// Delete
+router.delete('/api/passwords', passport.authenticate('cookie', {}),deletePassword, function (req, res) {
+    res.send({
+        message: "OK",
+        error_name: "NO"
+    })
+})
+
+//==============CRUD USERS===========================
 router.use(function (req, res, next) {
     throw new HttpError(NOT_FOUND, 'Not Found');
 });
