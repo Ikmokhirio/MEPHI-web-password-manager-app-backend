@@ -87,18 +87,20 @@ async function updateUserData(req, res, next) {
     const body = req.body
 
     if (body) {
-        if (body.username) {
-            user.username = body.username
+        if (body.new_password) {
+            let hashedPassword = await argon.hash(body.new_password);
+            let res = await argon.verify(hashedPassword, body.new_password);
+
+            if (res) {
+                user.password = hashedPassword
+            }
+
         }
-        if (body.password) {
-            user.password = body.password
+        if (body.new_email) {
+            user.email = body.new_email
         }
-        if (body.email) {
-            user.email = body.email
-        }
-        if (body.master_password) {
-            user.master_password = body.master_password
-        }
+
+        // Check master_password
 
         await user.save()
     }

@@ -123,14 +123,12 @@ router.post('/api/users', passport.authenticate('register', {}), function (req, 
 //
 // });
 
-// router.put('/api/users', passport.authenticate('cookie', {
-//     failureRedirect: '/api/users/login',
-//     failureFlash: true
-// }), updateUserData, function (req, res) {
-//
-//     res.send("OK")
-//
-// });
+router.put('/api/users',passport.authenticate('login', {
+    failureRedirect: '/api/users/login',
+    failureFlash: true
+}), updateUserData, function (req, res) {
+    res.send("OK")
+});
 
 // router.delete('/users', passport.authenticate('api', {
 //     failureRedirect: '/login',
