@@ -23,8 +23,7 @@ router.use(logger.logRequestToConsole);
 
 function successMessage(req, res) {
     res.send({
-        message: "OK",
-        error_name: ""
+        message: "OK"
     })
 }
 
@@ -53,8 +52,7 @@ router.post('/api/users/login', passport.authenticate('login',
 router.get('/api/user/logout', function (req, res) {
     req.logout();
     res.send({
-        message: "OK",
-        error_name: ""
+        message: "OK"
     })
 });
 
