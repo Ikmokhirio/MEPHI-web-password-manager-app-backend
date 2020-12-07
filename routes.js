@@ -4,6 +4,7 @@ const passport = require('./pass').passport
 const logger = require('./logger');
 const {findUserById} = require("./database");
 const {updateUserData} = require("./database");
+const {deleteUser} = require("./database")
 const {createNewPassword} = require("./database")
 const {getDecryptedPasswords} = require("./database")
 const {updatePasswords} = require("./database")
@@ -79,44 +80,36 @@ router.post('/api/users', passport.authenticate('register', {}), function (req, 
     })
 })
 
-router.put('/api/users',passport.authenticate('login', {
+router.put('/api/users', passport.authenticate('login', {
     failureRedirect: '/api/users/login',
     failureFlash: true
 }), updateUserData, function (req, res) {
-    res.send("OK")
+    res.send({
+        message: "OK",
+        error_name: "NO"
+    })
 });
 
-// router.delete('/users', passport.authenticate('api', {
-//     failureRedirect: '/login',
-//     failureFlash: true
-// }), function (req, res) {
-//     if (!req.query.id) throw new HttpError(BAD_REQUEST, "Incorrect parameters");
-//     deleteUserById(req.query.id).then(result => {
-//         console.log(result);
-//         if (result) {
-//             res.send("Success");
-//         } else {
-//             throw new HttpError(INTERNAL_SERVER_ERROR, "During this operation an error occurred");
-//         }
-//     }).catch(e => {
-//         console.log(e);
-//         res.send(e);
-//     });
-// });
+router.delete('/api/users', passport.authenticate('cookie'), deleteUser, (req, res) => {
+    res.send({
+        message: "OK",
+        error_name: "NO"
+    })
+})
 
 //==============CRUD USERS===========================
 
 //==============CRUD PASSWORDS===========================
 
 // Read
-router.get('/api/passwords', passport.authenticate('cookie', {}), async (req,res) => {
+router.get('/api/passwords', passport.authenticate('cookie', {}), async (req, res) => {
     let passwords = await getDecryptedPasswords(req.user)
 
     res.send(passwords)
 })
 
 // Create
-router.post('/api/passwords', passport.authenticate('cookie', {}),createNewPassword, function (req, res) {
+router.post('/api/passwords', passport.authenticate('cookie', {}), createNewPassword, function (req, res) {
     res.send({
         message: "OK",
         error_name: "NO"
@@ -124,7 +117,7 @@ router.post('/api/passwords', passport.authenticate('cookie', {}),createNewPassw
 })
 
 // Update
-router.put('/api/passwords', passport.authenticate('cookie', {}),updatePasswords, function (req, res) {
+router.put('/api/passwords', passport.authenticate('cookie', {}), updatePasswords, function (req, res) {
     res.send({
         message: "OK",
         error_name: "NO"
@@ -132,14 +125,14 @@ router.put('/api/passwords', passport.authenticate('cookie', {}),updatePasswords
 })
 
 // Delete
-router.delete('/api/passwords', passport.authenticate('cookie', {}),deletePassword, function (req, res) {
+router.delete('/api/passwords', passport.authenticate('cookie', {}), deletePassword, function (req, res) {
     res.send({
         message: "OK",
         error_name: "NO"
     })
 })
 
-//==============CRUD USERS===========================
+//==============CRUD PASSWORDS===========================
 router.use(function (req, res, next) {
     throw new HttpError(NOT_FOUND, 'Not Found');
 });

@@ -123,6 +123,24 @@ async function updateUserData(req, res, next) {
 }
 
 
+async function deleteUser(req, res, next) {
+    await passwordModel.destroy({
+        where: {
+            ownerId: req.user.id
+        }
+    })
+
+    await userModel.destroy({
+        where: {
+            username: req.user.username
+        }
+    })
+
+
+    next()
+}
+
+
 async function encryptPassword(algorithm, masterPassword, password) {
     return new Promise((resolve, reject) => {
         crypto.scrypt(masterPassword, salt, 32, (err, key) => {
@@ -248,7 +266,7 @@ async function updatePasswords(req, res, next) {
 
 async function deletePassword(req, res, next) {
     let body = req.body
-    if(!body) throw Error("No data")
+    if (!body) throw Error("No data")
     await passwordModel.destroy({
         where: {
             id: body.id
@@ -274,3 +292,4 @@ exports.getUserPasswords = getUserPasswords
 exports.getDecryptedPasswords = getDecryptedPasswords
 exports.updatePasswords = updatePasswords
 exports.deletePassword = deletePassword
+exports.deleteUser = deleteUser
