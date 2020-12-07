@@ -21,39 +21,49 @@ const {
 
 router.use(logger.logRequestToConsole);
 
-router.get('/api/users/login', (req, res) => {
+function successMessage(req, res) {
+    res.send({
+        message: "OK",
+        error_name: ""
+    })
+}
+
+router.get('/api/error', (req, res) => {
     let flashMessage = req.flash()
     if (flashMessage) {
         res.send({
-            message: flashMessage
+            message: "ERROR",
+            error_name: flashMessage
         })
     } else {
         res.send({
-            message: "Unexpected error"
+            message: "ERROR",
+            error_name: "Unexpected error"
         })
     }
 })
 
+// Login
 router.post('/api/users/login', passport.authenticate('login',
     {
-        failureRedirect: '/api/users/login',
+        failureRedirect: '/api/error',
         failureFlash: true
-    }), (req, res) => {
-    res.send({message: "SUCCESS"})
-});
+    }), successMessage)
 
 router.get('/api/user/logout', function (req, res) {
     req.logout();
-    res.send({message: "SUCCESS LOGOUT"})
+    res.send({
+        message: "OK",
+        error_name: ""
+    })
 });
 
 //==============CRUD USERS===========================
 
-router.get('/api/user', passport.authenticate('cookie', {
-    failureRedirect: '/api/users/login',
+router.get('/api/users', passport.authenticate('cookie', {
+    failureRedirect: '/api/error',
     failureFlash: true
 }), async (req, res) => {
-    console.log("HERE")
     res.send({
         username: req.user.username,
         role: req.user.role,
@@ -61,76 +71,49 @@ router.get('/api/user', passport.authenticate('cookie', {
     })
 })
 
-router.get('/api/users', passport.authenticate('cookie', {
-    failureRedirect: '/api/users/login',
-    failureFlash: true
-}), async (req, res) => {
-    if (req.user) {
-        let user = await findUserById(req.user.id)
-        res.send(JSON.stringify(user))
-    } else {
-        res.send("NO OK")
-    }
-})
 
-router.post('/api/users', passport.authenticate('register', {}), function (req, res) {
-    res.send({
-        message: "OK",
-        error_name: "NO"
-    })
-})
+router.post('/api/users', passport.authenticate('register', {
+    failureRedirect: '/api/error',
+    failureFlash: true
+}), successMessage)
 
 router.put('/api/users', passport.authenticate('login', {
-    failureRedirect: '/api/users/login',
+    failureRedirect: '/api/error',
     failureFlash: true
-}), updateUserData, function (req, res) {
-    res.send({
-        message: "OK",
-        error_name: "NO"
-    })
-});
+}), updateUserData, successMessage)
 
-router.delete('/api/users', passport.authenticate('cookie'), deleteUser, (req, res) => {
-    res.send({
-        message: "OK",
-        error_name: "NO"
-    })
-})
+router.delete('/api/users', passport.authenticate('cookie'), deleteUser, successMessage)
 
 //==============CRUD USERS===========================
 
 //==============CRUD PASSWORDS===========================
 
 // Read
-router.get('/api/passwords', passport.authenticate('cookie', {}), async (req, res) => {
+router.get('/api/passwords', passport.authenticate('cookie', {
+    failureRedirect: '/api/error',
+    failureFlash: true
+}), async (req, res) => {
     let passwords = await getDecryptedPasswords(req.user)
-
     res.send(passwords)
 })
 
 // Create
-router.post('/api/passwords', passport.authenticate('cookie', {}), createNewPassword, function (req, res) {
-    res.send({
-        message: "OK",
-        error_name: "NO"
-    })
-})
+router.post('/api/passwords', passport.authenticate('cookie', {
+    failureRedirect: '/api/error',
+    failureFlash: true
+}), createNewPassword, successMessage)
 
 // Update
-router.put('/api/passwords', passport.authenticate('cookie', {}), updatePasswords, function (req, res) {
-    res.send({
-        message: "OK",
-        error_name: "NO"
-    })
-})
+router.put('/api/passwords', passport.authenticate('cookie', {
+    failureRedirect: '/api/error',
+    failureFlash: true
+}), updatePasswords, successMessage)
 
 // Delete
-router.delete('/api/passwords', passport.authenticate('cookie', {}), deletePassword, function (req, res) {
-    res.send({
-        message: "OK",
-        error_name: "NO"
-    })
-})
+router.delete('/api/passwords', passport.authenticate('cookie', {
+    failureRedirect: '/api/error',
+    failureFlash: true
+}), deletePassword, successMessage)
 
 //==============CRUD PASSWORDS===========================
 router.use(function (req, res, next) {
