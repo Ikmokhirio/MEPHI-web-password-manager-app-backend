@@ -39,10 +39,11 @@ async function findUserById(id) {
     })
 }
 
-async function findPasswordById(id) {
+async function findPasswordById(id,user) {
     return await passwordModel.findOne({
         where: {
-            id: id
+            id: id,
+            ownerId: user.id
         }
     })
 }
@@ -243,7 +244,7 @@ async function updatePasswords(req, res, next) {
     let body = req.body
     if (!body) throw Error("Incorrect data")
 
-    let password = await findPasswordById(body.id)
+    let password = await findPasswordById(body.id,req.user)
     console.log(password)
 
     if (body.title) {
