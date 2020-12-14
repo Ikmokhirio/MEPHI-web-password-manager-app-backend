@@ -221,7 +221,7 @@ async function createNewPassword(req, res, next) {
 
     let newPassword = passwordModel.build({
         title: body.title,
-        login: body.title,
+        login: body.login,
         password: encryptedPassword,
         ownerId: req.user.id
     });
