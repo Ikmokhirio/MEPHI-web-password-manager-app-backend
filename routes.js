@@ -130,7 +130,6 @@ router.use(function (err, req, res, next) {
         message: err.message,
         error_name: err.name
     });
-    next(err);
 });
 
 module.exports = router
