@@ -2,7 +2,6 @@ const router = require('express').Router()
 const passport = require('./pass').passport
 
 const logger = require('./logger');
-const {findUserById} = require("./database");
 const {updateUserData} = require("./database");
 const {deleteUser} = require("./database")
 const {createNewPassword} = require("./database")
@@ -124,7 +123,6 @@ router.use(function (err, req, res, next) {
         err.statusCode = INTERNAL_SERVER_ERROR;
         err.name = INTERNAL_SERVER_ERROR + " ERROR";
     }
-
 
     res.send({
         message: err.message,
