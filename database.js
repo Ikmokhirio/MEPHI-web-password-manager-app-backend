@@ -8,7 +8,7 @@ const salt = require('./config/settings').password.salt
 const sequelize = new Sequelize(settings.database, settings.username, settings.password, {
     host: settings.host,
     dialect: settings.dialect,
-    logging: true
+    logging: false
 })
 
 const userModel = require('./models/user')(sequelize, Sequelize)
@@ -212,7 +212,6 @@ async function getDecryptedPasswords(user) {
 async function createNewPassword(req, res, next) {
     let body = req.body;
 
-    console.log(body)
     if (!body) throw Error("No data was passed")
 
     if (!body.title || !body.login || !body.password) throw Error("No data was passed")
@@ -245,7 +244,6 @@ async function updatePasswords(req, res, next) {
     if (!body) throw Error("Incorrect data")
 
     let password = await findPasswordById(body.id,req.user)
-    console.log(password)
 
     if (body.title) {
         password.title = body.title
